@@ -155,8 +155,6 @@ import CHAT_DATA from './lib/chatHistory.json';
     }
   };
 
-  //
-
   const appController = {
     init: function init() {
       this.chatData = chatData;
