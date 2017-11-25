@@ -1,12 +1,54 @@
 /* JS는 이 파일내에서만 작업해주세요. */
-
 // 수정하지 마세요.
 import CHAT_DATA from './lib/chatHistory.json';
 
-// `CHAT_DATA`라는 변수에 채팅 히스토리가 담겨있습니다. 이 데이터를 이용하시면 됩니다.
-console.log(CHAT_DATA);
-
 (function () {
+  const chatData = CHAT_DATA.map((data) => {
+    return new ChatData(data);
+  });
+
+  const emojiData = {
+    facepalm: '🤦',
+    scream_cat: '🙀',
+    ghost: '👻'
+  };
+
+  const chatDataType = {
+    connect: 'connect',
+    disconnect: 'disconnect',
+    update: 'update',
+    delete: 'delete',
+    message: 'message',
+  };
+
+  function ChatData(data) {
+    this.data = data;
+  }
+
+  ChatData.prototype.getDelta = function getDelta() {
+    return this.data.delta;
+  };
+
+  ChatData.prototype.getType = function getType() {
+    return this.data.payload.type;
+  };
+
+  ChatData.prototype.getUser = function getUser() {
+    return this.data.payload.user;
+  };
+
+  ChatData.prototype.getMessage = function getMessage() {
+    return this.data.payload.message;
+  };
+
+  ChatData.prototype.setMessageText = function setMessageText(text) {
+    this.data.payload.message.text = text;
+  };
+
+  ChatData.prototype.isMessageAndMatchedById = function isMessageAndMatchedById(id) {
+    return this.getType() === chatDataType.message && this.getMessage().id === id;
+  };
+
   function View() {
     this.element = null;
   }
@@ -14,30 +56,136 @@ console.log(CHAT_DATA);
   function ChatContainerView(selector) {
     View.call(this);
 
+    this.chatItemViews = [];
+
     this.element = document.querySelector(selector);
   }
 
   ChatContainerView.prototype = Object.create(View.prototype);
   ChatContainerView.prototype.constructor = ChatContainerView;
 
-  ChatContainerView.prototype.setMessage = function setMessage(messageView) {
-    this.element.appendChild(messageView.element);
+  ChatContainerView.prototype.add = function add(chatItemView) {
+    this.chatItemViews.push(chatItemView);
+    this.element.appendChild(chatItemView.element);
   };
 
-  function ChatItemView(message) {
+  ChatContainerView.prototype.remove = function remove(id) {
+    for (let i = 0; i < this.chatItemViews.length; i++) {
+      if (this.chatItemViews[i].data.isMessageAndMatchedById(id)) {
+        this.chatItemViews[i].element.remove();
+        this.chatItemViews.splice(i, 1);
+        break;
+      }
+    }
+  };
+
+  ChatContainerView.prototype.update = function update(chatData) {
+    if (chatData.getMessage()) {
+      this.updateMessage(chatData);
+    } else {
+      this.updateUser(chatData);
+    }
+  };
+
+  ChatContainerView.prototype.updateMessage = function updateMessage(chatData) {
+    for (let i = 0; i < this.chatItemViews.length; i++) {
+      const message = chatData.getMessage();
+      if (this.chatItemViews[i].data.isMessageAndMatchedById(message.id)) {
+        this.chatItemViews[i].data.setMessageText(message.text);
+        this.chatItemViews[i].createBody();
+        break;
+      }
+    }
+  };
+
+  ChatContainerView.prototype.updateUser = function updateUser(chatData) {
+    for (let i = 0; i < this.chatItemViews.length; i++) {
+      const user = chatData.getUser();
+      if (this.chatItemViews[i].data.getUser().id === user.id) {
+        this.chatItemViews[i].data.getUser().user_name = user.user_name;
+        this.chatItemViews[i].data.getUser().display_name = user.display_name;
+        this.chatItemViews[i].createBody();
+      }
+    }
+  };
+
+  function ChatItemView(chatData) {
     View.call(this);
+
+    this.data = chatData;
 
     this.element = document.createElement('div');
     this.element.className = 'chat';
 
-    if (message.payload.type === 'message') {
-      document.createElement('span');
-      message.payload.user.display_name
-    }
-    this.message = message;
-
-
+    this.createBody();
   }
-})();
 
-debugger;
+  ChatItemView.prototype = Object.create(View.prototype);
+  ChatItemView.prototype.constructor = ChatItemView;
+
+  ChatItemView.prototype.createBody = function createBody() {
+  };
+
+  function MessageChatItemView(chatData) {
+    ChatItemView.call(this, chatData);
+  }
+
+  MessageChatItemView.prototype.createBody = function createBody() {
+    let text = this.data.getMessage().text;
+    text = text.replace(/(\*)(.*)(\*)/g, `<i>$2</i>`);
+    text = text.replace(/(_)(.*)(_)/g, `<i>$2</i>`);
+    text = text.replace(/(:)(.*)(:)/g, (match, p1, p2) => {
+      return emojiData[p2];
+    });
+
+    this.element.innerHTML = `<span>${this.data.getUser().display_name} : ${text}</span>`;
+  };
+
+  function InfoChatItemView(chatData) {
+    ChatItemView.call(this, chatData);
+  }
+
+  InfoChatItemView.prototype.createBody = function createBody() {
+    const dataType = this.data.getType();
+
+    if (dataType === chatDataType.connect) {
+      this.element.innerHTML = `<span class="info">${this.data.getUser().display_name} is connected.</span>`;
+    } else if (dataType === chatDataType.disconnect) {
+      this.element.innerHTML = `<span class="info">${this.data.getUser().display_name} is disconnected.</span>`;
+    }
+  };
+
+  //
+
+  const appController = {
+    init: function init() {
+      this.chatData = chatData;
+
+      this.chatContainerView = new ChatContainerView('#chat-container');
+
+      this.chatData.forEach((data) => {
+        setTimeout(() => {
+          const dataType = data.getType();
+
+          switch (dataType) {
+            case chatDataType.message:
+              this.chatContainerView.add(new MessageChatItemView(data));
+              break;
+            case chatDataType.connect:
+            case chatDataType.disconnect:
+              this.chatContainerView.add(new InfoChatItemView(data));
+              break;
+            case chatDataType.update:
+              this.chatContainerView.update(data);
+              break;
+            case chatDataType.delete:
+              this.chatContainerView.remove(data.getMessage().id);
+              break;
+          }
+        }, data.getDelta());
+      });
+    }
+  };
+
+  appController.init();
+})();
