@@ -71,11 +71,15 @@ import CHAT_DATA from './lib/chatHistory.json';
 
   ChatContainerView.prototype.remove = function remove(id) {
     for (let i = 0; i < this.chatItemViews.length; i++) {
-      if (this.chatItemViews[i].data.isMessageAndMatchedById(id)) {
-        this.chatItemViews[i].element.remove();
-        this.chatItemViews.splice(i, 1);
-        break;
+      const view = this.chatItemViews[i];
+
+      if (!view.data.isMessageAndMatchedById(id)) {
+        continue;
       }
+
+      view.element.remove();
+      this.chatItemViews.splice(i, 1);
+      break;
     }
   };
 
@@ -88,25 +92,35 @@ import CHAT_DATA from './lib/chatHistory.json';
   };
 
   ChatContainerView.prototype.updateMessage = function updateMessage(chatData) {
+    const message = chatData.getMessage();
+
     for (let i = 0; i < this.chatItemViews.length; i++) {
-      const message = chatData.getMessage();
-      if (this.chatItemViews[i].data.isMessageAndMatchedById(message.id)) {
-        this.chatItemViews[i].data.setMessageText(message.text);
-        this.chatItemViews[i].createBody();
-        break;
+      const view = this.chatItemViews[i];
+
+      if (!view.data.isMessageAndMatchedById(message.id)) {
+        continue;
       }
+
+      view.data.setMessageText(message.text);
+      view.createBody();
+      break;
     }
   };
 
   ChatContainerView.prototype.updateUser = function updateUser(chatData) {
-    for (let i = 0; i < this.chatItemViews.length; i++) {
-      const user = chatData.getUser();
-      if (this.chatItemViews[i].data.getUser().id === user.id) {
-        this.chatItemViews[i].data.getUser().user_name = user.user_name;
-        this.chatItemViews[i].data.getUser().display_name = user.display_name;
-        this.chatItemViews[i].createBody();
+    const updatedUser = chatData.getUser();
+
+    this.chatItemViews.forEach((view) => {
+      const user = view.data.getUser();
+
+      if (user.id !== updatedUser.id) {
+        return;
       }
-    }
+
+      user.user_name = updatedUser.user_name;
+      user.display_name = updatedUser.display_name;
+      view.createBody();
+    });
   };
 
   function ChatItemView(chatData) {
@@ -144,6 +158,9 @@ import CHAT_DATA from './lib/chatHistory.json';
   function InfoChatItemView(chatData) {
     ChatItemView.call(this, chatData);
   }
+
+  InfoChatItemView.prototype = Object.create(MessageChatItemView);
+  InfoChatItemView.prototype.constructor = InfoChatItemView;
 
   InfoChatItemView.prototype.createBody = function createBody() {
     const dataType = this.data.getType();
