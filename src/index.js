@@ -107,7 +107,6 @@ import CHAT_DATA from './lib/chatHistory.json';
 
 	var appController = {
 		userTalkMessage: function (el , chatType) {
-			console.log("111");
 		},
 		init: function () {
 			var chatBoxView = new View('.chatBox');
