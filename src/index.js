@@ -77,6 +77,7 @@ import CHAT_DATA from './lib/chatHistory.json';
 		if( chatType === "message" ){
 			allELSelect[dataIndex].querySelector('span').innerHTML = userIndex_dpName;
 			allELSelect[dataIndex].querySelector('p').innerHTML = userIndex_messageText;
+			cb(userIndex_messageText);
 		}else if( chatType === "connect" ){
 			chatDataModel.connect();
 			allELSelect[dataIndex].querySelector('p').innerHTML = userIndex_dpName + "님이 접속 하셨습니다.";
@@ -102,7 +103,6 @@ import CHAT_DATA from './lib/chatHistory.json';
 			var allELSelectmsgid = document.querySelectorAll('[data-msgid="' + userIndex_messageId + '"]');
 			allELSelectmsgid[0].textContent = "(메시지를 삭제 하였습니다.)";
 		}
-		cb(this.element , chatType);
 	};
 
 	var appController = {
