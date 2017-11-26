@@ -7,68 +7,121 @@ import CHAT_DATA from './lib/chatHistory.json';
 
 (function(){
 	var chatDataLen = CHAT_DATA.length ;
+	var data;
 	var chatDatIndex = 0;
-	var chatBox = document.querySelector(".chatBox");
 	var userIndex_id;
 	var userIndex_dpName;
 	var userIndex_messageId;
 	var userIndex_messageText;
 	var userIndex_messageId;
-	var messageStart = setInterval(function(){
-		
-		var msgBox = document.createElement("div");
 
-		if(CHAT_DATA[chatDatIndex].payload.type === "message"){
-			userIndex_id = CHAT_DATA[chatDatIndex].payload.user.id;
-			userIndex_dpName = CHAT_DATA[chatDatIndex].payload.user.display_name;
-			userIndex_messageId = CHAT_DATA[chatDatIndex].payload.message.id;
-			userIndex_messageText = CHAT_DATA[chatDatIndex].payload.message.text;
-			chatBox.appendChild(msgBox).innerHTML = "<p class='name' userId='" + userIndex_id + "'>" + userIndex_dpName + "</p> <p class='message' messageId='"+ userIndex_messageId +"'>" + userIndex_messageText + "</p>"
-		}
+	var chatDataModel = (function () {
 
-		if(CHAT_DATA[chatDatIndex].payload.type === "connect"){
-			userIndex_dpName = CHAT_DATA[chatDatIndex].payload.user.display_name;
-			chatBox.appendChild(msgBox).innerHTML = "<p>" + userIndex_dpName + "님이 접속 하셨습니다. </p>";
-		}
-
-		if(CHAT_DATA[chatDatIndex].payload.type === "update"){
-
-			if( CHAT_DATA[chatDatIndex].payload.user ){
-				var nameUpdate = document.querySelectorAll('[userId="' + userIndex_id + '"]');
-				var prevUserName = nameUpdate[0].textContent;
+		return{
+			chatIndexSum: function(){
+				chatDatIndex++;
+			},
+			messageData: function(){
+				userIndex_id = CHAT_DATA[chatDatIndex].payload.user.id;
 				userIndex_dpName = CHAT_DATA[chatDatIndex].payload.user.display_name;
-				chatBox.appendChild(msgBox).innerHTML = "<p>" + prevUserName + " 님이 대화명을" + userIndex_dpName + " 로 변경 하였습니다.</p>";
-				for( var i = 0 ; i < nameUpdate.length ; i++ ){
-					nameUpdate[i].textContent = CHAT_DATA[chatDatIndex].payload.user.user_name;
-				}
-			}
-
-			if( CHAT_DATA[chatDatIndex].payload.message ){
 				userIndex_messageId = CHAT_DATA[chatDatIndex].payload.message.id;
-				var messageUpdate = document.querySelector('[messageId="' + userIndex_messageId + '"]');				
-				messageUpdate.textContent = CHAT_DATA[chatDatIndex].payload.message.text + "(메시지 수정)";
+				userIndex_messageText = CHAT_DATA[chatDatIndex].payload.message.text;
+			},
+			connect: function(){
+				userIndex_id = CHAT_DATA[chatDatIndex].payload.user.id;
+				userIndex_dpName = CHAT_DATA[chatDatIndex].payload.user.display_name;
+			},
+			msgUpdate: function(){
+				userIndex_messageText = CHAT_DATA[chatDatIndex].payload.message.text;
+				userIndex_messageId = CHAT_DATA[chatDatIndex].payload.message.id;
+			},
+			msgDelete: function(){
+				userIndex_messageId = CHAT_DATA[chatDatIndex].payload.message.id;
 			}
 		}
+	})();
 
-		if(CHAT_DATA[chatDatIndex].payload.type === "delete"){
-			userIndex_messageId = CHAT_DATA[chatDatIndex].payload.message.id;
-			var messageDelete = document.querySelector('[messageId="' + userIndex_messageId + '"]');
-			messageDelete.textContent = "(메시지를 삭제 하였습니다.)";
+	function View (selector) {
+		this.element = document.querySelector(selector);
+	};
+	View.prototype.scrollDown = function () {
+		this.element.scrollTop = this.element.scrollHeight;
+	};
+	function ViewAllSelector (selector) {
+		this.element = document.querySelectorAll(selector);
+	};
+	ViewAllSelector.prototype = Object.create(View.prototype);
+	ViewAllSelector.prototype.constructor = ViewAllSelector;
+
+	function MessageWriteView(selector,msgType){
+		View.call(this, selector);
+		var msgBox = document.createElement('div');
+		var UserMessage = document.createElement('p');
+		if( msgType === "message" ){
+			chatDataModel.messageData();
+			var userName = document.createElement('span');
+			userName.dataset.userid = userIndex_id;
+			userName.classList.add('userName');
+			msgBox.appendChild(userName);
+			UserMessage.dataset.msgid = userIndex_messageId;
+			UserMessage.classList.add('message');
 		}
+        msgBox.appendChild(UserMessage);
+        this.element.appendChild(msgBox);
+	};
+	MessageWriteView.prototype = Object.create(View.prototype);
+	MessageWriteView.prototype.constructor = MessageWriteView;
 
-		if(CHAT_DATA[chatDatIndex].payload.type === "disconnect"){
-			userIndex_dpName = CHAT_DATA[chatDatIndex].payload.user.display_name;
-			chatBox.appendChild(msgBox).innerHTML = userIndex_dpName + "님이 나가셨습니다.";
+	MessageWriteView.prototype.userMessagePrint = function (chatType, dataIndex , cb) {
+		var allELSelect = this.element.querySelectorAll("div");
+		if( chatType === "message" ){
+			allELSelect[dataIndex].querySelector('span').innerHTML = userIndex_dpName;
+			allELSelect[dataIndex].querySelector('p').innerHTML = userIndex_messageText;
+		}else if( chatType === "connect" ){
+			chatDataModel.connect();
+			allELSelect[dataIndex].querySelector('p').innerHTML = userIndex_dpName + "님이 접속 하셨습니다.";
+		}else if( chatType === "disconnect" ){
+			chatDataModel.connect();
+			allELSelect[dataIndex].querySelector('p').innerHTML = userIndex_dpName + "님이 나가셨습니다.";
+		}else if( chatType === "update" ){
+			if( CHAT_DATA[dataIndex].payload.user ){
+				chatDataModel.connect();
+				appController.dpNameUpdateView = new ViewAllSelector('[data-userid="' + userIndex_id + '"]');
+				var prevUserName = appController.dpNameUpdateView.element[0].textContent;
+				allELSelect[dataIndex].querySelector('p').innerHTML = prevUserName + " 님이 대화명을" + userIndex_dpName + " 로 변경 하였습니다.";
+				for( var i = 0 ; i < appController.dpNameUpdateView.length ; i++ ){
+					appController.dpNameUpdateView.element[i].textContent = userIndex_dpName;
+				}
+			}else{
+				chatDataModel.msgUpdate();
+				var allELSelectmsgid = document.querySelectorAll('[data-msgid="' + userIndex_messageId + '"]');
+				allELSelectmsgid[0].textContent = userIndex_messageText + "(메시지 수정)";
+			}
+		}else if( chatType === "delete" ){
+			chatDataModel.msgDelete();
+			var allELSelectmsgid = document.querySelectorAll('[data-msgid="' + userIndex_messageId + '"]');
+			allELSelectmsgid[0].textContent = "(메시지를 삭제 하였습니다.)";
 		}
+		cb(this.element , chatType);
+	};
 
-		chatBox.scrollTop = chatBox.scrollHeight;
-		chatDatIndex++
-
-		if(chatDatIndex === chatDataLen ){
-			clearInterval(messageStart);
+	var appController = {
+		userTalkMessage: function (el , chatType) {
+			console.log("111");
+		},
+		init: function () {
+			var chatBoxView = new View('.chatBox');
+			var messageStart = setInterval(function(){
+				var chatType = CHAT_DATA[chatDatIndex].payload.type;
+				var messageWriteView = new MessageWriteView('.chatBox',chatType);
+				messageWriteView.userMessagePrint(chatType, chatDatIndex , appController.userTalkMessage.bind(this));
+				if(chatDatIndex === chatDataLen-1 ){
+					clearInterval(messageStart);
+				}
+				chatDataModel.chatIndexSum();
+				chatBoxView.scrollDown();
+			}, CHAT_DATA[chatDatIndex].delta );
 		}
-
-	}, CHAT_DATA[chatDatIndex].delta );
-
-
+	};
+ 	appController.init();
 })();
