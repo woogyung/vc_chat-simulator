@@ -49,6 +49,7 @@ for (var i = 0; i < CHAT_DATA.length; i++) {
                 para.appendChild(text);
                 chat.appendChild(para);
             }
+            window.scrollTo(0, document.body.scrollHeight);
         };
     }(i), CHAT_DATA[i].delta);
 } //loop end
