@@ -19,10 +19,11 @@ h1 {
 	position:absolute;
 	top:50%;
 	left:50%;
+	padding-top:30px;
 	margin-top:-350px;
 	margin-left:-450px;
-	background:white;
-	overflow:scroll;
+	background-color: #fff;
+	overflow-Y:scroll;
 
 	span.userName{
 		font:800 16px/1 "arial";
@@ -30,7 +31,40 @@ h1 {
 	p.message{
 		font:600 16px/1 "arial";
 		color:brown;
+		span{
+			display:inline-block;
+			width:30px;
+			height:30px;
+			background-image: url("http://yk198205.dothome.co.kr/emoji.png");
+			background-repeat: no-repeat;
+		}
+		span.ghost{
+			background-position:-30 0;
+		}
+		span.sob{
+			background-position:-90px 0;
+		}
+		span.scream_cat{
+			background-position:-60px 0;
+		}
+		span.facepalm{
+			background-position:0 0;
+		}
+		span.boldText{ 
+			width:auto;
+			height:auto;
+			background-image: none;
+			color:blue;
+		}
+		span.userName{ 
+			width:auto;
+			height:auto;
+			background-image: none;
+			color:green;
+		}
 	}
+
+
 
 	div{
 		margin-left:50px;
