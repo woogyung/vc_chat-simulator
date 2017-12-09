@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css?family=Fugaz+One');
 
+*{
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background-color: #FFF59D;
   padding: 50px;
@@ -10,4 +15,71 @@ h1 {
     text-align: center;
     color: #03A9F4;
     font-size: 50px;
+}
+
+/* Chat containers */
+.container {
+  border: 2px solid #dedede;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px 0;
+  width: 40%;
+}
+
+/* Darker chat container */
+.darker {
+  border-color: #ccc;
+  background-color: #ddd;
+  margin-left: 58%;
+}
+
+/* Clear floats */
+.container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Style images */
+.container .fa {
+  float: left;
+  max-width: 60px;
+  width: 100%;
+  margin-right: 20px;
+  border-radius: 50%;
+}
+
+/* Style the right image */
+.container img.right {
+  float: right;
+  margin-left: 20px;
+  margin-right:0;
+}
+
+/* Style time text */
+.time-right {
+  float: right;
+  color: #aaa;
+}
+
+/* Style time text */
+.time-left {
+  float: left;
+  color: #999;
+}
+
+/* nickname text*/
+.nickName {
+  font-weight: bold;
+}
+
+.system-message {
+  text-align: center;
+  font-weight: bold;
+  font-size: 20px;
+  background: #F5FFFA;
+  color: #009ff2;
+  padding: 5px 0 5px 0;
+  margin: 10px 0 10px 0;
 }

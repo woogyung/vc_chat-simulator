@@ -28,5 +28,8 @@
   "bugs": {
     "url": "https://github.com/vanilla-coding/chat-simulator/issues"
   },
-  "homepage": "https://github.com/vanilla-coding/chat-simulator#readme"
+  "homepage": "https://github.com/vanilla-coding/chat-simulator#readme",
+  "dependencies": {
+    "imojify": "0.0.5"
+  }
 }
