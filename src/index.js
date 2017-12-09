@@ -27,7 +27,7 @@ function ChatSimulator(CHAT_DATA) {
 ChatSimulator.prototype.startChat = function() {
   var self = this;
 
-  this.chatData.forEach(function(packet, index) {
+  this.chatData.forEach(function(packet) {
     self.time += packet.delta;
     self.packetHandler(packet);
   });
@@ -78,9 +78,9 @@ ChatSimulator.prototype.sendMessage = function(user, message) {
 };
 
 ChatSimulator.prototype.deleteMessage = function(id) {
+  var self = this;
   setTimeout(function() {
-    var container = document.getElementById(id.toString());
-    container.parentNode.removeChild(container);
+    self.updateMessage({id : id, text: 'message deleted'});
   }, this.time);
 
   this.send(this.createSystemMessage('message id_' + id +
@@ -117,6 +117,7 @@ ChatSimulator.prototype.update = function(data) {
   } else if (data.message) {
 
     cb = this.updateMessage;
+    data.message.text += ' (edited)';
     param = data.message;
     message = 'update message id : ' + data.message.id;
   }
