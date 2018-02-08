@@ -1,13 +1,103 @@
 @import url('https://fonts.googleapis.com/css?family=Fugaz+One');
 
+@bg-color: #E8ECED;
+@point-color: #03A9F4;
+@state-color: #75706f;
+@disconnect-color: #af2408;
+
 body {
-  background-color: #FFF59D;
+  background-color: @bg-color;
   padding: 50px;
+  font-size: 14px;
 }
 
 h1 {
-    font-family: 'Fugaz One', cursive;
+  font-family: 'Fugaz One', cursive;
+  text-align: center;
+  color: @point-color;
+  font-size: 50px;
+}
+
+.chat-wrap {
+  border-color: darken(@bg-color, 10%);
+  border-width: 1px;
+  border-style: dashed;
+  background-color: #fff;
+
+  .chat {
+    position: relative;
+    padding: 5px 0;
+    transition: all 0.4s;
+    &::after {
+      display:block;
+      content:"";
+      clear:both;
+    }
+  }
+
+  .user-wrap{
+    float: left;
+    padding: 0 20px;
+    .user-nic {
+      margin-top: 6px;
+      color: @point-color;
+      font-weight: bold;
+    }
+    .user-id {
+      color: #999;
+      font-size:12px;
+    }
+    .connect {
+      color: @state-color;
+    }
+    .disconnect {
+      color: @state-color;
+    }
+  }
+
+  .message-wrap {
+    position: relative;
+    margin-top: 4px;
+
+    ::before {
+      content: "";
+      position: absolute;
+      border-color: transparent #dde3e4 transparent transparent;
+      border-style: solid;
+      border-width: 8px 11px 8px 0;
+      display: inline-block;
+      width: 0;
+      top: 12%;
+      left: -11px;
+
+    }
+    .message {
+      position: relative;
+      display: inline-block;
+      max-width: 50%;
+      padding: 3px 20px;
+      line-height: 20px;
+      border-color: darken(@bg-color, 4%);
+      border-width: 1px;
+      border-style: solid;
+      color: #666;
+      word-wrap: break-word;
+      background-color: darken(@bg-color, 4%);
+    }
+  }
+
+  .status {
+    color: @state-color;
+    font-size: 13px;
+    font-weight: bold;
     text-align: center;
-    color: #03A9F4;
-    font-size: 50px;
+
+      &.disconnect {
+      color: @disconnect-color;
+    }
+  }
+
+  .edited {
+    color: @point-color;
+  }
 }
